@@ -2,3 +2,7 @@ __pycache__
 .vscode
 launch.json
 cgolenv
+build
+dist
+venv
+main.spec

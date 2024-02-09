@@ -1,7 +1,7 @@
 # Should find a better solution than this
 
-WIDTH = 40
-HEIGHT = 40
+WIDTH = 25
+HEIGHT = 25
 
-CANVAS_WIDTH = 800
-CANVAS_HEIGHT = 800
+CANVAS_WIDTH = 900
+CANVAS_HEIGHT = 900

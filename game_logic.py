@@ -3,65 +3,85 @@ import numpy as np
 from config import WIDTH, HEIGHT
 
 class GameData():
-    def __init__(self):
-        self.width = WIDTH
-        self.height = HEIGHT
-        self.grid = np.zeros((self.height, self.width), dtype=bool)
+    def __init__(self, width: int, height: int):
+        self.init_grid(width, height)
         self.cache = dict()
         self.checked_coords = []
-        # self.grid = np.random.choice(a=[False, True], size=(self.height, self.width))
 
+    def init_grid(self, width, height):
+        self.width = width
+        self.height = height
+        self.grid = np.zeros((self.height, self.width), dtype=bool)
+                
+
+    def randomize_grid(self):
+        self.grid = np.random.choice([True, False], (self.height, self.width))
+
+    def clear_grid(self):
+        self.init_grid(self.width, self.height)
+
+    def get_neighbors(self, i, j):
+        neighbors = []
+        if i > 0:
+            neighbors.append((i-1, j))
+            if j > 0:
+                neighbors.append((i-1, j-1))
+            if j+1 < self.width:
+                neighbors.append((i-1, j+1))
+        if i+1 < self.height:
+            neighbors.append((i+1, j))
+            if j > 0:
+                neighbors.append((i+1, j-1))
+            if j+1 < self.width:
+                neighbors.append((i+1, j+1))
+        if j > 0:
+            neighbors.append((i, j-1))
+        if j+1 < self.width:
+            neighbors.append((i, j+1))
+        return neighbors
 
     def sum_neighbors(self, i, j):
-        top_bound = i-1 if i > 0 else 0
-        bottom_bound = i+2 if i+1 < self.height else self.height
-        left_bound = j-1 if j > 0 else 0
-        right_bound = j+2 if j+1 < self.width else self.width
+        neighbors = self.get_neighbors(i, j)
+        sum = 0
 
-        # slice subarray around cell
-        neighbors = self.grid[top_bound:bottom_bound, left_bound:right_bound]
-        cell = self.grid[i, j]
+        for x, y in neighbors:
+            sum += self.grid[x, y]
 
-        return np.sum(neighbors) - int(cell)
+        return sum
 
 
-    def check_alive(self, i, j, new_grid, initial=False):
+    def check_alive(self, i, j, new_grid, rec=0):
         if (i, j) in self.checked_coords:
             return
-        self.checked_coords.append((i, j))
         alive = self.grid[i, j]
         number_of_neighbors = self.sum_neighbors(i, j)
-        if alive and number_of_neighbors < 2:
-            new_grid[i, j] = False
+        # if alive and number_of_neighbors < 2:
+        #     new_grid[i, j] = False
         if alive and number_of_neighbors in (2, 3):
             new_grid[i, j] = True
-        if alive and number_of_neighbors > 3:
-            new_grid[i, j] = False
+        # if alive and number_of_neighbors > 3:
+        #     new_grid[i, j] = False
         if not alive and number_of_neighbors == 3:
             new_grid[i, j] = True
 
         # recursive call
-        if initial:
-            top_bound = i-1 if i > 0 else 0
-            bottom_bound = i+2 if i+1 < self.height else self.height
-            left_bound = j-1 if j > 0 else 0
-            right_bound = j+2 if j+1 < self.width else self.width
-
-            for k in range(top_bound, bottom_bound):
-                for l in range(left_bound, right_bound):
-                    self.check_alive(k, l, new_grid)
+        if alive and rec < 2:
+            self.checked_coords.append((i, j))
+            neighbors = self.get_neighbors(i, j)
+            for k, l in neighbors:
+                self.check_alive(k, l, new_grid, rec+1)
         
 
     def calculate_gen(self):
-        new_grid = np.copy(self.grid)
+        new_grid = np.zeros(self.grid.shape, dtype=bool)
         for i in range(self.height):
             for j in range(self.width):
                 if (self.grid[i, j]):
-                    self.check_alive(i, j, new_grid, initial=True)
+                    self.check_alive(i, j, new_grid)
         self.grid = new_grid
         self.checked_coords = []
         
 
     
 
-gamedata = GameData()
+gamedata = GameData(WIDTH, HEIGHT)
